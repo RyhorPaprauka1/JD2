@@ -39,7 +39,7 @@
         <input id="rng" name="maxPrice" type="range" min="0" max="300" value="300" step="20">
         <output id="ong" for="rng">50</output>
         Показывать по
-        <select name="maxResult">
+        <select name="limit">
             <option value="2">2</option>
             <option value="4">4</option>
         </select>
@@ -55,10 +55,9 @@
     </ul>
 </div>
 <div>
-    <select form="catalogForm" name="pageNumber">
-        <option selectedvalue="1">1</option>
-        <c:forEach var="i" begin="1" end="${requestScope.pageNumber}" step="1">
-            <option value="${i}">${i}</option>
+    <select form="catalogForm" name="page">
+        <c:forEach var="i" begin="0" end="${requestScope.pageNumber}" step="1">
+            <option value="${i+1}">${i+1}</option>
         </c:forEach>
     </select>
 </div>

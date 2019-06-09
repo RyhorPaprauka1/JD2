@@ -1,62 +1,40 @@
 package by.itacademy.database.entity;
 
-import by.itacademy.database.util.EntityCreator;
-import lombok.Cleanup;
-import org.hibernate.Session;
+import by.itacademy.database.BaseTest;
+import by.itacademy.database.repository.BookingRepository;
+import by.itacademy.database.repository.UserRepository;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.Serializable;
-
-import static by.itacademy.database.util.SessionManager.getSession;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-public class BookingTest extends EntityBaseTest {
+public class BookingTest extends BaseTest {
 
-    private static EntityCreator entityCreator = EntityCreator.getInstance();
+    @Autowired
+    private BookingRepository bookingRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Test
     public void checkSaveBooking() {
-        @Cleanup Session session = getSession();
-        session.beginTransaction();
-        User user = entityCreator.createUser("логин");
-        session.save(user);
+        Booking booking = Booking.builder()
+                .user(userRepository.findById(99L).orElse(null))
+                .completed(false)
+                .processed(false)
+                .build();
 
-        Booking booking = entityCreator.createBooking(user);
-        Serializable id = session.save(booking);
-        assertNotNull(id);
+        bookingRepository.save(booking);
+        assertNotNull(bookingRepository.findById(booking.getId()));
     }
 
     @Test
     public void checkGetBooking() {
-        @Cleanup Session session = getSession();
-        session.beginTransaction();
-
-        User user = entityCreator.createUser("логин");
-        Serializable userId = session.save(user);
-        assertNotNull(userId);
-
-        Booking booking = entityCreator.createBooking(user);
-        Serializable id = session.save(booking);
-        assertNotNull(id);
-
-        fillBooking(session, booking);
-        session.getTransaction().commit();
-        session.clear();
-
-        Booking savedBooking = session.get(Booking.class, id);
-        assertNotNull(savedBooking);
-        assertThat(savedBooking.getUser(), equalTo(user));
-    }
-
-    private void fillBooking(Session session, Booking booking) {
-        Book book = entityCreator.createAudioBook();
-        book.getBookings().add(booking);
-        session.save(book);
-
-        Book secondBook = entityCreator.createAudioBook();
-        secondBook.getBookings().add(booking);
-        session.save(secondBook);
+        Booking booking = bookingRepository.findById(99L).orElse(null);
+        assertNotNull(booking);
+        assertThat(booking.getUser().getLogin(), equalTo("user"));
+        assertThat(booking.getBooks(), hasSize(1));
     }
 }

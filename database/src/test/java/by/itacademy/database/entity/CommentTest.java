@@ -1,57 +1,43 @@
 package by.itacademy.database.entity;
 
-import by.itacademy.database.util.EntityCreator;
-import lombok.Cleanup;
-import org.hibernate.Session;
+import by.itacademy.database.BaseTest;
+import by.itacademy.database.repository.BookRepository;
+import by.itacademy.database.repository.CommentRepository;
+import by.itacademy.database.repository.UserRepository;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.Serializable;
-
-import static by.itacademy.database.util.SessionManager.getSession;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
-public class CommentTest extends EntityBaseTest {
+public class CommentTest extends BaseTest {
 
-    private static EntityCreator entityCreator = EntityCreator.getInstance();
+    @Autowired
+    private CommentRepository commentRepository;
+    @Autowired
+    private BookRepository bookRepository;
+    @Autowired
+    private UserRepository userRepository;
 
     @Test
     public void checkSaveComment() {
-        @Cleanup Session session = getSession();
-        session.beginTransaction();
-        User user = entityCreator.createUser("логин");
-        session.save(user);
+        Comment comment = Comment.builder()
+                .user(userRepository.findById(99L).orElse(null))
+                .book(bookRepository.findById(99L).orElse(null))
+                .text("Otlichnaya kniga")
+                .build();
 
-        Book book = entityCreator.createEBook();
-        session.save(book);
-
-        Comment comment = entityCreator.createComment(user, book);
-        Serializable id = session.save(comment);
-        assertNotNull(id);
+        commentRepository.save(comment);
+        assertNotNull(commentRepository.findById(comment.getId()).orElse(null));
     }
 
     @Test
     public void checkGetComment() {
-        @Cleanup Session session = getSession();
-        session.beginTransaction();
+        Comment comment = commentRepository.findById(99L).orElse(null);
 
-        User user = entityCreator.createUser("логин");
-        session.save(user);
-
-        Book book = entityCreator.createEBook();
-        session.save(book);
-
-        Comment comment = entityCreator.createComment(user, book);
-        Serializable id = session.save(comment);
-        assertNotNull(id);
-
-        session.getTransaction().commit();
-        session.clear();
-
-        Comment savedComment = session.get(Comment.class, id);
-        assertNotNull(savedComment);
-        assertThat(savedComment.getUser(), equalTo(user));
-        assertThat(savedComment.getBook(), equalTo(book));
+        assertNotNull(comment);
+        assertThat(comment.getUser().getLogin(), equalTo("user"));
+        assertThat(comment.getBook().getName(), equalTo("БИОЛОГИЯ"));
     }
 }

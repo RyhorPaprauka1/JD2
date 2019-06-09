@@ -1,30 +1,48 @@
 package by.itacademy.service.service;
 
-import by.itacademy.database.CatalogFilterDto;
-import by.itacademy.database.dao.BookDao;
 import by.itacademy.database.entity.Book;
-import lombok.NoArgsConstructor;
+import by.itacademy.database.repository.BookRepository;
+import by.itacademy.service.vo.CatalogValues;
+import by.itacademy.service.filter.ExpressionBuilder;
+import com.google.common.collect.Lists;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-import static lombok.AccessLevel.PRIVATE;
+import static by.itacademy.database.entity.QBook.book;
 
-@NoArgsConstructor(access = PRIVATE)
+@Service
+@Transactional
 public class BookService {
 
-    private static final BookService INSTANCE = new BookService();
+    private final BookRepository bookRepository;
 
-    private BookDao bookDao = BookDao.getInstance();
+    @Autowired
+    public BookService(BookRepository bookRepository) {
+        this.bookRepository = bookRepository;
+    }
 
-    public List<Book> getCatalog(CatalogFilterDto catalogFilter) {
-        return bookDao.getBookCatalog(catalogFilter);
+    public List<Book> getCatalog(CatalogValues values) {
+        ExpressionBuilder eb = new ExpressionBuilder();
+        eb.add(values.getName(), book.name::containsIgnoreCase);
+        eb.add(values.getGenre(), book.genre::eq);
+        eb.add(values.getPrice(), book.price::lt);
+
+        Pageable pageable = PageRequest.of(values.getPage(), values.getLimit());
+
+        return Lists.newArrayList(
+                bookRepository.findAll(eb.getExpression(), pageable));
+    }
+
+    public int getPageNumber(CatalogValues dto) {
+        return (int) Math.ceil(bookRepository.count() / dto.getLimit());
     }
 
     public List<Book> getAll() {
-        return bookDao.getAll();
-    }
-
-    public static BookService getInstance() {
-        return INSTANCE;
+        return bookRepository.findAll();
     }
 }

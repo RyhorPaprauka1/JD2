@@ -1,56 +1,41 @@
 package by.itacademy.database.entity;
 
-import by.itacademy.database.util.EntityCreator;
-import lombok.Cleanup;
-import org.hibernate.Session;
+import by.itacademy.database.BaseTest;
+import by.itacademy.database.entity.enums.Rights;
+import by.itacademy.database.repository.UserRepository;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.Serializable;
-
-import static by.itacademy.database.util.SessionManager.getSession;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
-public class UserTest extends EntityBaseTest {
+public class UserTest extends BaseTest {
 
-    private static EntityCreator entityCreator = EntityCreator.getInstance();
+    @Autowired
+    private UserRepository userRepository;
 
     @Test
     public void checkSaveUser() {
-        @Cleanup Session session = getSession();
-        session.beginTransaction();
-        User user = entityCreator.createUser("логин");
-        Serializable id = session.save(user);
-        assertNotNull(id);
+        User user = User.builder()
+                .login("login")
+                .password("pass")
+                .name("Ryhor")
+                .surname("Paprauka")
+                .rights(Rights.FULL)
+                .contacts(Contacts.of("dskfjsd", "dfds", "+375(25)906-47-10"))
+                .build();
+
+        userRepository.save(user);
+        assertNotNull(userRepository.findById(user.getId()).orElse(null));
     }
 
     @Test
     public void checkGetUser() {
-        @Cleanup Session session = getSession();
-        session.beginTransaction();
-        User user = entityCreator.createUser("логин");
-        Serializable id = session.save(user);
-        assertNotNull(id);
-
-        fillUser(session, user);
-        session.getTransaction().commit();
-        session.clear();
-
-        User savedUser = session.get(User.class, id);
-        assertNotNull(savedUser);
-        assertThat(savedUser.getBookings(), hasSize(2));
-        assertThat(savedUser.getComment(), hasSize(2));
-        assertNotNull(savedUser.getBlacklist());
-    }
-
-    private void fillUser(Session session, User user) {
-        Book book = entityCreator.createAudioBook();
-        session.save(book);
-        session.save(entityCreator.createBooking(user));
-        session.save(entityCreator.createBooking(user));
-        session.save(entityCreator.createComment(user, book));
-        session.save(entityCreator.createComment(user, book));
-        session.save(entityCreator.createBlacklist(user));
+        User user = userRepository.findById(99L).orElse(null);
+        assertNotNull(user);
+        assertThat(user.getBookings(), hasSize(3));
+        assertThat(user.getComment(), hasSize(2));
+        assertNotNull(user.getBlacklist());
     }
 }
