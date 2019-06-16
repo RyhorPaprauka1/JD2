@@ -1,12 +1,13 @@
 package by.itacademy.web.config;
 
-import by.itacademy.service.config.ServiceConfig;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 @Configuration
+@EnableWebMvc
 @ComponentScan("by.itacademy.web")
-@Import(ServiceConfig.class)
+@Import(ThymeleafConfig.class)
 public class WebConfig {
 }
