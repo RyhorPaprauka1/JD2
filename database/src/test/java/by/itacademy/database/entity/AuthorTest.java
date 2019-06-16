@@ -1,55 +1,37 @@
 package by.itacademy.database.entity;
 
-import by.itacademy.database.util.EntityCreator;
-import lombok.Cleanup;
-import org.hamcrest.Matchers;
-import org.hibernate.Session;
+import by.itacademy.database.BaseTest;
+import by.itacademy.database.repository.AuthorRepository;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.io.Serializable;
-
-import static by.itacademy.database.util.SessionManager.getSession;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
-public class AuthorTest extends EntityBaseTest {
+public class AuthorTest extends BaseTest {
 
-    private static EntityCreator entityCreator = EntityCreator.getInstance();
+    @Autowired
+    private AuthorRepository authorRepository;
 
     @Test
     public void checkSaveAuthor() {
-        @Cleanup Session session = getSession();
-        session.beginTransaction();
-        Author author = entityCreator.createAuthor();
-        Serializable id = session.save(author);
-        assertNotNull(id);
+        Author author = Author.builder()
+                .name("Федор")
+                .surname("Достоевский")
+                .bio("1830-1900")
+                .build();
+
+        authorRepository.save(author);
+        assertNotNull(authorRepository.findById(author.getId()));
     }
 
     @Test
     public void checkGetAuthor() {
-        @Cleanup Session session = getSession();
-        session.beginTransaction();
-
-        Author author = entityCreator.createAuthor();
-        Serializable id = session.save(author);
-        assertNotNull(id);
-
-        writeBooks(session, author);
-        session.getTransaction().commit();
-        session.clear();
-
-        Author savedAuthor = session.get(Author.class, id);
-        assertNotNull(savedAuthor);
-        assertThat(savedAuthor.getBooks(), Matchers.hasSize(2));
-    }
-
-    private void writeBooks(Session session, Author author) {
-        Book book = entityCreator.createAudioBook();
-        book.getAuthors().add(author);
-        session.save(book);
-
-        Book secondBook = entityCreator.createAudioBook();
-        book.getAuthors().add(author);
-        session.save(secondBook);
+        Author author = authorRepository.findById(99L).orElse(null);
+        assertNotNull(author);
+        assertThat(author.getName(), equalTo("Vitaly"));
+        assertThat(author.getBooks(), hasSize(2));
     }
 }

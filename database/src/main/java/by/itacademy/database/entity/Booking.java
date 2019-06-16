@@ -38,10 +38,10 @@ public class Booking implements BaseEntity<Long> {
     private User user;
 
     @Column(name = "is_completed", nullable = false)
-    private Boolean isCompleted;
+    private Boolean completed;
 
     @Column(name = "is_processed", nullable = false)
-    private Boolean isProcessed;
+    private Boolean processed;
 
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "booking_book", schema = "bookshop_storage",
