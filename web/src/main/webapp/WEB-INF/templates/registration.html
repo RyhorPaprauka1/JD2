@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Registration</title>
+</head>
+<body>
+<div>
+    <form th:action="@{/registration}" th:method="post">
+        <input id="login" type="text" name="login" placeholder="Логин" required><br>
+        <input id="password" type="password" name="password" placeholder="Пароль" required><br>
+        <input id="name" type="text" name="name" placeholder="Имя" required><br>
+        <input id="surname" type="text" name="surname" placeholder="Фамилия" required><br>
+        <input id="mail" type="email" name="mail" placeholder="E-mail"
+               pattern="^([a-zA-Z0-9_\-\.]+)@([a-zA-Z0-9_\-\.]+)\.([a-zA-Z]{2,5})$" required><br>
+        <input id="address" type="text" name="address" placeholder="Адрес" required><br>
+        <input id="tel" type="tel" name="tel" placeholder="Телефон +375(25)ХХХ-XX-XX"
+               pattern="^\+375\((25|29|33|44)\)\d{3}\-\d{2}\-\d{2}$" required>
+        <div class="button">
+            <input type="submit" value="Зарегестрироваться">
+        </div>
+    </form>
+</div>
+</body>
+</html>
